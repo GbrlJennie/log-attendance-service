@@ -12,8 +12,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose port (Misalnya 8000)
-EXPOSE 8000
+EXPOSE 3002
 
 # Command untuk menjalankan aplikasi
 # host 0.0.0.0 agar bisa diakses dari luar STB (network public)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3002"]
