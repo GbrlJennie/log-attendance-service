@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STB Attendance Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen p-6 lg:p-10">
+
+    <header class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
+                Attendance Hub
+            </h1>
+            <p class="text-slate-500 mt-1">Service: High-Performance Logging Unit</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                <div class="bg-indigo-600 p-6">
+                    <h2 class="text-white font-semibold text-lg flex items-center gap-2">
+                    Input Kehadiran
+                    </h2>
+                    <p class="text-indigo-200 text-sm mt-1">Masukkan data log.</p>
+                </div>
+                
+                <form id="logForm" class="p-6 space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">User ID (NIM/NIP)</label>
+                        <input type="number" id="userId" required placeholder="Ex: 18223092" 
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition font-mono text-lg">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Kategori Kehadiran</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="category" value="WFO" checked class="peer sr-only">
+                                <div class="p-3 border border-slate-200 rounded-xl text-center peer-checked:bg-indigo-50 peer-checked:border-indigo-500 peer-checked:text-indigo-700 transition hover:bg-slate-50">
+                                    <span class="block font-semibold text-sm">🏢 WFO</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="category" value="WFH" class="peer sr-only">
+                                <div class="p-3 border border-slate-200 rounded-xl text-center peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-700 transition hover:bg-slate-50">
+                                    <span class="block font-semibold text-sm">🏠 WFH</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Catatan (Opsional)</label>
+                        <textarea id="notes" rows="2" placeholder="Cth: Demam tinggi / Meeting luar"
+                            class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm"></textarea>
+                    </div>
+
+                    <div class="pt-2 grid grid-cols-2 gap-4">
+                        <button type="button" onclick="submitLog('CHECK_IN')" 
+                            class="flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-200 transition transform active:scale-95">
+                            <i data-lucide="log-in" class="w-2 h-4"></i> Check In
+                        </button>
+                        <button type="button" onclick="submitLog('CHECK_OUT')" 
+                            class="flex items-center justify-center bg-white hover:bg-slate-50 text-indigo-600 border-2 border-indigo-600 font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-100 transition transform active:scale-95">
+                            <i data-lucide="log-out" class="w-2 h-4"></i> Check Out
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+         <div class="lg:col-span-8">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-100 flex flex-col">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h2 class="font-bold text-lg text-slate-800">Live Attendance Logs</h2>
+                    <button onclick="loadLogs()" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> Refresh
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto overflow-y-auto max-h-[435px] p-2">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-white z-10">
+                            <tr class="text-slate-400 text-xs uppercase tracking-wider border-b border-slate-100">
+                                <th class="p-4 font-semibold">Time</th>
+                                <th class="p-4 font-semibold">User ID</th>
+                                <th class="p-4 font-semibold">Event</th>
+                                <th class="p-4 font-semibold">Category</th>
+                                <th class="p-4 font-semibold">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logTableBody" class="text-sm text-slate-600">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="toast" class="fixed bottom-5 right-5 bg-white border-l-4 border-emerald-500 shadow-2xl rounded-lg p-4 transform translate-y-20 opacity-0 transition duration-300 flex items-center gap-3">
+        <div id="toastIcon" class="bg-emerald-100 p-2 rounded-full text-emerald-600">
+            <i data-lucide="check"></i>
+        </div>
+        <div>
+            <h4 id="toastTitle" class="font-bold text-slate-800 text-sm">Success</h4>
+            <p id="toastMsg" class="text-slate-500 text-xs">Data saved successfully.</p>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        async function submitLog(eventType) {
+            const userId = document.getElementById('userId').value;
+            const notes = document.getElementById('notes').value;
+            const category = document.querySelector('input[name="category"]:checked').value;
+
+            if (!userId) {
+                alert("Mohon isi User ID!");
+                return;
+            }
+
+            const payload = {
+                user_id: parseInt(userId),
+                event_type: eventType,
+                category: category,
+                notes: notes
+            };
+
+            try {
+                const res = await fetch('/api/logs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showToast(`Log ${eventType} berhasil untuk ID ${userId}`, eventType);
+                    loadLogs();
+                    document.getElementById('logForm').reset();
+                    document.querySelector('input[value="WFO"]').checked = true;
+                }
+            } catch (err) {
+                console.error(err); 
+                alert("Terjadi Error: " + err.message);
+            }
+        }
+
+        function showToast(msg, eventType) {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastTitle = document.getElementById('toastTitle');
+            
+            document.getElementById('toastMsg').textContent = msg;
+            
+            if (eventType === 'CHECK_IN') {
+                toast.className = 'fixed bottom-5 right-5 bg-white border-l-4 border-indigo-500 shadow-2xl rounded-lg p-4 transform transition duration-300 flex items-center gap-3';
+                toastIcon.className = 'bg-indigo-100 p-2 rounded-full text-indigo-600';
+                toastTitle.textContent = 'Check In Success';
+                toastIcon.innerHTML = '<i data-lucide="log-in"></i>';
+            } else if (eventType === 'CHECK_OUT') {
+                toast.className = 'fixed bottom-5 right-5 bg-white border-l-4 border-slate-400 shadow-2xl rounded-lg p-4 transform transition duration-300 flex items-center gap-3';
+                toastIcon.className = 'bg-slate-100 p-2 rounded-full text-slate-600';
+                toastTitle.textContent = 'Check Out Success';
+                toastIcon.innerHTML = '<i data-lucide="log-out"></i>';
+            }
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+
+        async function loadLogs() {
+            const res = await fetch('/api/logs');
+            const logs = await res.json();
+            const tbody = document.getElementById('logTableBody');
+            
+            tbody.innerHTML = logs.map(log => {
+                const date = new Date(log.timestamp);
+                const timeStr = date.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+                const dateStr = date.toLocaleDateString('id-ID', {day: 'numeric', month: 'short'});
+
+                let badgeColor = 'bg-slate-100 text-slate-600';
+                if(log.category === 'WFO') badgeColor = 'bg-purple-100 text-purple-700';
+                if(log.category === 'WFH') badgeColor = 'bg-teal-100 text-teal-700';
+
+                return `
+                <tr class="border-b border-slate-50 hover:bg-slate-50 transition">
+                    <td class="p-4">
+                        <div class="font-bold text-slate-800">${timeStr}</div>
+                        <div class="text-xs text-slate-400">${dateStr}</div>
+                    </td>
+                    <td class="p-4 font-mono text-indigo-600 font-semibold">#${log.user_id}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded-md text-xs font-bold ${log.event_type === 'CHECK_IN' ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-600 border border-indigo-600'}">
+                            ${log.event_type}
+                        </span>
+                    </td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded-md text-xs font-bold ${badgeColor}">
+                            ${log.category}
+                        </span>
+                    </td>
+                    <td class="p-4 text-slate-500 italic truncate max-w-xs">${log.notes || '-'}</td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        loadLogs();
+    </script>
+</body>
+</html>
