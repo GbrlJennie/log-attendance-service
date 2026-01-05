@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 from . import database
+import uvicorn
 
 app = FastAPI(title="Attendance Log Service Pro", version="2.0.0")
 
@@ -51,3 +52,6 @@ def get_logs(limit: int = 20, db: Session = Depends(get_db)):
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+if __name__ == "__main__":
+    uvicorn.run("app.main:app", host="0.0.0.0", port=3002, reload=True)
