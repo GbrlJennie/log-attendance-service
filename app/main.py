@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -9,6 +10,18 @@ from . import database
 import uvicorn
 
 app = FastAPI(title="Attendance Log Service Pro", version="2.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",  # Vite dev server
+        "https://tendee.queenifyofficial.site",  # Production frontend
+        "*" 
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
+    allow_headers=["*"],  # Allow semua headers
+)
 
 database.init_db()
 templates = Jinja2Templates(directory="app/templates")
